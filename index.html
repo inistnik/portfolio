@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>КАДР — архив баннерных кампаний</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff;
+    --paper-2:#f4f4f2;
+    --ink:#111111;
+    --ink-soft:#75726c;
+    --accent:#e2001a;
+    --accent-soft:#fbd9dc;
+    --line:#e6e4de;
+    --white:#ffffff;
+    --font-display:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    --font-body:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    --font-mono:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:var(--font-mono);}
+  a{color:inherit;}
+
+  /* ---------- layout shell ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  header.site{
+    padding:48px 0 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{font-size:12px;letter-spacing:0.04em;color:var(--ink-soft);margin:0 0 28px;}
+  .wordmark b{color:var(--accent);font-weight:400;}
+
+  .profile{padding-bottom:8px;}
+  .profile-top{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap-reverse;margin-bottom:8px;}
+  .profile-photo{
+    width:132px;height:132px;flex:0 0 132px;
+    border:1px solid var(--line);background:var(--paper-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;
+    text-align:center;overflow:hidden;
+  }
+  .profile-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .profile-headline{flex:1;min-width:240px;padding-top:4px;}
+  .profile-role{font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin:0 0 10px;}
+  .profile-name{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(32px,5.2vw,50px);letter-spacing:-0.02em;margin:0;line-height:1.03;
+  }
+
+  .profile-row{display:grid;grid-template-columns:190px 1fr;gap:24px;padding:22px 0;border-top:1px solid var(--line);}
+  .profile-label{font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-soft);padding-top:2px;cursor:pointer;position:relative;user-select:none;}
+  .profile-label:hover{color:var(--ink);}
+  .profile-label::after{content:"+";position:absolute;left:-16px;top:1px;font-size:13px;color:var(--accent);}
+  .profile-row.open .profile-label::after{content:"–";}
+  .profile-row .profile-content{display:none;}
+  .profile-row.open .profile-content{display:block;}
+  .profile-row.open .profile-content.skills-list{display:flex;}
+  .profile-content p{margin:0 0 12px;font-size:15px;line-height:1.65;max-width:640px;}
+  .profile-content p:last-child{margin-bottom:0;}
+
+  .edu-item,.exhibit-item{
+    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    padding:9px 0;font-size:14px;border-bottom:1px solid var(--line);
+  }
+  .edu-item:last-child,.exhibit-item:last-child{border-bottom:none;}
+  .edu-item b{font-weight:500;}
+  .venue{color:var(--ink-soft);font-size:12px;white-space:nowrap;}
+
+  .skills-list{display:flex;flex-direction:column;gap:12px;}
+  .skill-item{font-size:14px;position:relative;padding-left:14px;}
+  .skill-item::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1px;background:var(--ink-soft);}
+  .skill-sub{display:block;color:var(--ink-soft);font-size:12px;margin-top:3px;}
+
+  .section-heading-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:44px 0 20px;border-top:1px solid var(--line);margin-top:36px;}
+  .section-heading{font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:0.01em;margin:0;text-transform:uppercase;}
+
+  @media(max-width:640px){
+    .profile-row{grid-template-columns:1fr;gap:6px;}
+    .profile-label{padding-top:0;}
+    .edu-item,.exhibit-item{flex-direction:column;gap:2px;}
+  }
+
+  .brand-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+  .brand{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(40px,7vw,64px);
+    letter-spacing:-0.03em;
+    line-height:0.9;
+    margin:0;
+  }
+  .brand span{color:var(--accent);}
+  .tagline{
+    margin:10px 0 0;
+    font-size:15px;
+    color:var(--ink-soft);
+    max-width:420px;
+  }
+  .stats{
+    display:flex;gap:28px;
+    font-family:var(--font-mono);
+  }
+  .stat-num{font-size:26px;font-weight:700;line-height:1;}
+  .stat-lbl{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
+
+  .filters{
+    display:flex;flex-wrap:wrap;gap:8px;
+    padding:20px 0 0;
+  }
+  .chip{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:7px 13px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--ink);color:var(--ink);}
+  .chip.active{background:var(--ink);border-color:var(--ink);color:var(--white);}
+
+  /* ---------- index grid ---------- */
+  #index-view{padding:32px 0 80px;}
+  .grid-projects{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:18px;
+  }
+  .card{
+    position:relative;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-left:6px solid var(--card-hue,var(--accent));
+    padding:20px 20px 18px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,0.07);}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .card-no{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .card-cat{
+    font-family:var(--font-mono);
+    font-size:10px;text-transform:uppercase;letter-spacing:0.06em;
+    color:var(--card-hue,var(--accent));
+    font-weight:700;
+  }
+  .card-title{
+    font-family:var(--font-display);
+    font-size:22px;font-weight:700;margin:12px 0 2px;letter-spacing:-0.02em;
+  }
+  .card-client{font-size:13px;color:var(--ink-soft);margin:0 0 14px;}
+  .collage{display:flex;align-items:flex-end;gap:4px;height:56px;margin-bottom:14px;}
+  .collage .swatch{
+    display:block;
+    border-radius:1px;
+    background:linear-gradient(135deg,var(--sw-a),var(--sw-b));
+    flex:0 0 auto;
+  }
+  .card-foot{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--line);padding-top:10px;
+    font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);
+  }
+  .card-foot b{color:var(--ink);font-weight:700;}
+
+  /* ---------- gallery view ---------- */
+  #gallery-view{display:none;padding:28px 0 80px;}
+  .gallery-header{padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  .back-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:0.05em;
+    background:none;border:none;color:var(--ink-soft);cursor:pointer;padding:0;margin-bottom:18px;
+  }
+  .back-btn:hover{color:var(--accent);}
+  .gallery-title-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+  .gallery-title{font-family:var(--font-display);font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-0.03em;margin:0;}
+  .gallery-meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);margin-top:8px;}
+  .gallery-meta b{color:var(--ink);}
+  .size-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;}
+  .gallery-description{max-width:640px;margin-top:16px;}
+  .gallery-description p{margin:0 0 10px;font-size:15px;line-height:1.6;}
+  .gallery-description p:first-child{color:var(--ink-soft);font-size:13px;}
+  .gallery-description a{color:var(--accent);font-size:14px;text-decoration:underline;}
+
+  .grid-banners{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    gap:14px;
+  }
+  .frame{
+    position:relative;
+    background:var(--white);
+    border:1px solid var(--line);
+    height:150px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .frame:hover{border-color:var(--ink);}
+  .frame-banner{
+    position:relative;
+    background:linear-gradient(135deg,var(--bg-a),var(--bg-b));
+    max-width:88%;max-height:80%;
+  }
+  .frame-banner::after{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,rgba(0,0,0,0.06) 0,rgba(0,0,0,0.06) 1px,transparent 1px,transparent 7px);
+  }
+  .frame-size{
+    position:absolute;bottom:6px;left:8px;
+    font-family:var(--font-mono);font-size:10px;color:var(--ink-soft);
+    background:rgba(255,255,255,0.88);padding:1px 4px;
+  }
+  .frame-tick{
+    position:absolute;top:6px;left:6px;width:9px;height:9px;
+    opacity:0;transition:opacity .12s ease;
+  }
+  .frame:hover .frame-tick{opacity:1;}
+  .frame-tick::before,.frame-tick::after{content:"";position:absolute;background:var(--accent);}
+  .frame-tick::before{top:4px;left:0;width:9px;height:1px;}
+  .frame-tick::after{top:0;left:4px;width:1px;height:9px;}
+
+  /* ---------- lightbox ---------- */
+  #lightbox{
+    display:none;position:fixed;inset:0;background:rgba(21,20,15,0.94);
+    z-index:100;align-items:center;justify-content:center;flex-direction:column;
+  }
+  .lb-stage{position:relative;display:flex;align-items:center;justify-content:center;}
+  .lb-banner{
+    background:linear-gradient(135deg,var(--bg-a),var(--bg-b));
+    max-width:min(80vw,760px);max-height:60vh;position:relative;
+  }
+  .lb-banner::after{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,rgba(0,0,0,0.06) 0,rgba(0,0,0,0.06) 1px,transparent 1px,transparent 8px);
+  }
+  .reg{position:absolute;width:16px;height:16px;}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--white);}
+  .reg::before{top:7px;left:0;width:16px;height:1px;}
+  .reg::after{top:0;left:7px;width:1px;height:16px;}
+  .reg-tl{top:-8px;left:-8px;} .reg-tr{top:-8px;right:-8px;}
+  .reg-bl{bottom:-8px;left:-8px;} .reg-br{bottom:-8px;right:-8px;}
+
+  .lb-info{
+    margin-top:22px;display:flex;align-items:center;gap:18px;
+    font-family:var(--font-mono);font-size:12px;color:var(--paper);
+  }
+  .lb-info .idx{color:var(--accent-soft);}
+  .lb-nav{
+    background:none;border:1px solid rgba(255,255,255,0.35);color:var(--white);
+    width:38px;height:38px;cursor:pointer;font-size:16px;
+  }
+  .lb-nav:hover{border-color:var(--white);}
+  .lb-close{
+    position:absolute;top:26px;right:28px;background:none;border:none;color:var(--white);
+    font-size:26px;cursor:pointer;line-height:1;
+  }
+  .lb-close:hover{color:var(--accent-soft);}
+
+  @media(max-width:560px){
+    .wrap{padding:0 18px;}
+    .stats{gap:18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site">
+    <div id="home-header">
+    <p class="wordmark mono">istnik<b>.portfolio</b></p>
+
+    <div class="profile">
+      <div class="profile-top">
+        <div class="profile-photo"><img src="images/profile.jpg" alt="Никита Истюшкин" /></div>
+        <div class="profile-headline">
+          <p class="profile-role mono">Графический дизайнер · мультидисциплинарный художник · архитектор</p>
+          <h1 class="profile-name">Никита Истюшкин</h1>
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <div class="profile-label mono" onclick="toggleProfileRow(this)">Обо мне</div>
+        <div class="profile-content">
+          <p>Мультидисциплинарный художник, 1997 г.р., пос. Шемышейка. Окончил бакалавриат Пензенского государственного университета архитектуры и строительства, учился в магистратуре Нижегородского государственного архитектурно-строительного университета, окончил программу «Технологическое искусство» в Арттех МИСИС.</p>
+          <p>В основе творческого метода — исследование взаимосвязей между формой, материалом и социальным контекстом. Основные медиумы: скульптура, инсталляция, графика.</p>
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <div class="profile-label mono" onclick="toggleProfileRow(this)">Арт-стейтмент</div>
+        <div class="profile-content">
+          <p>Создавая собственный бестиарий существ, вторгающихся в нашу реальность на фоне всё большего смешения нашей реальности с цифровой, Никита работает с постгейм и постдиджитал эстетикой. Смешивая реальности, автор размышляет на тему восприятия нашей действительности сквозь диффузию глобальной цифровизации. Перенасыщенность информацией, невозможность точной достоверности, а также вариативность цифровых миров от видеоигр до огромных объёмов контента создают эклектические новые собирательные образы эскапизма.</p>
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <div class="profile-label mono" onclick="toggleProfileRow(this)">Образование</div>
+        <div class="profile-content">
+          <div class="edu-item"><b>Арттех МИСИС</b><span class="mono">2024–2026</span></div>
+          <div class="edu-item"><b>Пензенский государственный университет архитектуры и строительства</b><span class="mono">2015–2020</span></div>
+          <div class="edu-item"><b>Нижегородский государственный архитектурно-строительный университет</b><span class="mono">2020–2022</span></div>
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <div class="profile-label mono" onclick="toggleProfileRow(this)">Выставочная история</div>
+        <div class="profile-content">
+          <div class="exhibit-item"><span>Пространства утраченного</span><span class="venue mono">Граунд Солянка, 2025</span></div>
+          <div class="exhibit-item"><span>ArtTECH 25 [I]</span><span class="venue mono">галерея «Краснохолмская», 2025</span></div>
+          <div class="exhibit-item"><span>«Скворечник»</span><span class="venue mono">галерея на Каширке, 2025</span></div>
+          <div class="exhibit-item"><span>«Слова, которые мы не произносим»</span><span class="venue mono">РГБМ</span></div>
+          <div class="exhibit-item"><span>Арт-резиденция «Сказ» на Алтае</span><span class="venue mono">Парк Отель Манжерок</span></div>
+          <div class="exhibit-item"><span>«Скворцы прилетели»</span><span class="venue mono">галерея АРТМАГ / Винзавод, 2025</span></div>
+          <div class="exhibit-item"><span>«Слова, которые мы не произносим»</span><span class="venue mono">РГБМ, 2024</span></div>
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <div class="profile-label mono" onclick="toggleProfileRow(this)">Навыки</div>
+        <div class="profile-content skills-list">
+          <div class="skill-item">Figma</div>
+          <div class="skill-item">Пакет Adobe<span class="skill-sub mono">Photoshop, Illustrator, InDesign, Premiere</span></div>
+          <div class="skill-item">Procreate</div>
+          <div class="skill-item">Вайбкодинг</div>
+          <div class="skill-item">ИИ<span class="skill-sub mono">Midjourney, Sora, Nano Banana, Stable Diffusion</span></div>
+          <div class="skill-item">2D-иллюстрации и 3D</div>
+          <div class="skill-item">Айдентика</div>
+          <div class="skill-item">Полиграфия</div>
+          <div class="skill-item">Презентации</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-heading-row">
+      <h2 class="section-heading">Работы</h2>
+      <div class="stats">
+        <div><div class="stat-num" id="stat-projects">0</div><div class="stat-lbl">проектов</div></div>
+        <div><div class="stat-num" id="stat-banners">0</div><div class="stat-lbl">работ</div></div>
+        <div><div class="stat-num" id="stat-formats">0</div><div class="stat-lbl">категорий</div></div>
+      </div>
+    </div>
+    <div class="filters" id="cat-filters"></div>
+    </div>
+  </header>
+
+  <section id="index-view">
+    <div class="grid-projects" id="grid-projects"></div>
+  </section>
+
+  <section id="gallery-view">
+    <div class="gallery-header">
+      <button class="back-btn" onclick="showIndex()">&larr; ко всем проектам</button>
+      <div class="gallery-title-row">
+        <div>
+          <h2 class="gallery-title" id="g-title"></h2>
+          <p class="gallery-meta mono" id="g-meta"></p>
+        </div>
+      </div>
+      <div class="gallery-description" id="g-description"></div>
+      <div class="size-filters" id="g-size-filters"></div>
+    </div>
+    <div class="grid-banners" id="grid-banners"></div>
+  </section>
+</div>
+
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">&times;</button>
+  <div class="lb-stage">
+    <div class="lb-banner" id="lb-banner">
+      <div class="reg reg-tl"></div><div class="reg reg-tr"></div>
+      <div class="reg reg-bl"></div><div class="reg reg-br"></div>
+    </div>
+  </div>
+  <div class="lb-info">
+    <button class="lb-nav" onclick="navLightbox(-1)">&larr;</button>
+    <span id="lb-filename"></span>
+    <span class="idx" id="lb-idx"></span>
+    <button class="lb-nav" onclick="navLightbox(1)">&rarr;</button>
+  </div>
+</div>
+
+<script>
+const REAL_PROJECTS = [
+  {
+    title:'Рекламная кампания для СберСтрахования',
+    client:'СберСтрахование × RUSSPASS',
+    cat:'СберСтрахование',
+    year:'2022–2024',
+    unit:'работ',
+    description:'«СберСтрахование» и RUSSPASS запустили интерактивный путеводитель по России.',
+    link:{label:'Открыть сайт проекта', url:'https://travel.sberbankins.ru/'},
+    scope:'Сайт, иллюстрации, баннеры, ресайзы, стикеры',
+    images:[
+      {src:'images/sber-01-map.jpg', w:1391, h:658, caption:'Иллюстрированная карта России'},
+      {src:'images/sber-02-banner-green.jpg', w:1391, h:658, caption:'Промо-баннер, зелёный'},
+      {src:'images/sber-03-banner-white.jpg', w:1391, h:658, caption:'Промо-баннер, белый'},
+      {src:'images/sber-04-stickers.jpg', w:1600, h:900, caption:'Набор стикеров'},
+      {src:'images/sber-05-shelf.jpg', w:1600, h:792, caption:'Иллюстрация «Полка»'}
+    ]
+  },
+  {
+    title:'СберСтрахование. Баннеры',
+    client:'СберСтрахование',
+    cat:'СберСтрахование',
+    year:'2022–2024',
+    unit:'баннеров',
+    scope:'Рекламные баннеры для соцсетей и digital-размещений',
+    images:[
+      {src:'images/sber-b2-01-heart.jpg', w:1295, h:1295, caption:'Статистика: полисы от заболеваний'},
+      {src:'images/sber-b2-02-bike.jpg', w:1000, h:1000, caption:'Страховка от травм, промокод'},
+      {src:'images/sber-b2-03-microscope.jpg', w:1295, h:1295, caption:'Статистика: микроскоп и ДНК'},
+      {src:'images/sber-b2-04-armchair.jpg', w:1000, h:1000, caption:'Страховка квартиры, промокод'},
+      {src:'images/sber-b2-05-dna.jpg', w:1295, h:1295, caption:'Статистика: ДНК крупным планом'}
+    ]
+  },
+  {
+    title:'Брошюры СберСтрахование',
+    client:'СберСтрахование',
+    cat:'СберСтрахование',
+    year:'2022–2024',
+    unit:'страниц',
+    scope:'Печатные брошюры и промо-листовки',
+    images:[
+      {src:'images/sber-broch-01-ski.jpg', w:596, h:842, caption:'Отдых без тревог — горные лыжи'},
+      {src:'images/sber-broch-02-paraglide.jpg', w:595, h:842, caption:'Отдых без тревог — параплан'},
+      {src:'images/sber-broch-03-mtb.jpg', w:595, h:842, caption:'Надёжная защита — горный велосипед'},
+      {src:'images/sber-broch-04-agent.jpg', w:420, h:595, caption:'Стань агентом СберСтрахования'},
+      {src:'images/sber-broch-05-horse.jpg', w:595, h:842, caption:'Надёжная защита — верховая езда'},
+      {src:'images/sber-broch-06-atv.jpg', w:595, h:842, caption:'Надёжная защита — квадроцикл'},
+      {src:'images/sber-broch-07-cycling.jpg', w:595, h:842, caption:'Спортивные достижения — велогонка'},
+      {src:'images/sber-broch-08-bikeevent.jpg', w:595, h:842, caption:'Отдых без тревог — велопрогулка'},
+      {src:'images/sber-broch-09-racer.jpg', w:595, h:842, caption:'Спортивные достижения — велогонщик'}
+    ]
+  },
+  {
+    title:'Открытки СберСтрахование',
+    client:'СберСтрахование',
+    cat:'СберСтрахование',
+    year:'2022–2024',
+    unit:'открыток',
+    scope:'Поздравительные открытки к профессиональным праздникам',
+    images:[
+      {src:'images/sber-card-01-builder.jpg', w:1400, h:776, caption:'С Днём строителя'},
+      {src:'images/sber-card-02-railway.jpg', w:1400, h:776, caption:'С Днём железнодорожника'},
+      {src:'images/sber-card-03-lawyer.jpg', w:1400, h:787, caption:'С Днём российского юриста'},
+      {src:'images/sber-card-04-ecologist.jpg', w:1400, h:776, caption:'С Днём эколога'},
+      {src:'images/sber-card-05-earth.jpg', w:1400, h:776, caption:'С Днём эколога, планета'},
+      {src:'images/sber-card-06-lawyer2.jpg', w:1400, h:787, caption:'С Днём российского юриста, вариант 2'},
+      {src:'images/sber-card-07-entrepreneur.jpg', w:1400, h:787, caption:'С Днём предпринимательства'},
+      {src:'images/sber-card-08-eco-city.jpg', w:1400, h:776, caption:'С Днём эколога, город'},
+      {src:'images/sber-card-09-energy.jpg', w:1400, h:787, caption:'С Днём энергетика'},
+      {src:'images/sber-card-10-chemist.jpg', w:1400, h:787, caption:'С Днём химика'}
+    ]
+  },
+  {
+    title:'Баннеры СберСтрахование',
+    client:'СберСтрахование',
+    cat:'СберСтрахование',
+    year:'2022–2024',
+    unit:'баннеров',
+    scope:'Продуктовые рекламные баннеры: страхование, спорт, путешествия',
+    images:[
+      {src:'images/sber-b3-01-mom-drawings.jpg', w:1080, h:607, caption:'День матери — детские рисунки'},
+      {src:'images/sber-b3-02-mom-winter.jpg', w:1080, h:607, caption:'День матери — зимний сюжет'},
+      {src:'images/sber-b3-03-mom-envelope.jpg', w:1080, h:607, caption:'День матери — конверт с цветами'},
+      {src:'images/sber-b3-04-health-heart.jpg', w:1080, h:607, caption:'Поддержка при болезни'},
+      {src:'images/sber-b3-05-cat-mascot.jpg', w:1400, h:788, caption:'Маскот-кот — страхование путешественника'},
+      {src:'images/sber-b3-06-suitcase.jpg', w:1400, h:788, caption:'Чемодан — страхование путешественника'},
+      {src:'images/sber-b3-07-suitcase-hat.jpg', w:1400, h:788, caption:'Чемодан и шляпа — яркие эмоции'},
+      {src:'images/sber-b3-08-vacation.jpg', w:1400, h:787, caption:'Сбереги свой отпуск'},
+      {src:'images/sber-b3-09-tick-tent.jpg', w:758, h:426, caption:'Защита от клеща — палатка'},
+      {src:'images/sber-b3-10-tick-daisy.jpg', w:1400, h:787, caption:'Защита от клеща — ромашка'},
+      {src:'images/sber-b3-11-tick-mushrooms.jpg', w:1400, h:787, caption:'Защита от клеща — грибы'},
+      {src:'images/sber-b3-12-winter-adventures.jpg', w:1080, h:608, caption:'Зимние приключения застрахованы'},
+      {src:'images/sber-b3-13-sport-headphones.jpg', w:1080, h:607, caption:'Спортивная защита — наушники'},
+      {src:'images/sber-b3-14-sport-gloves.jpg', w:1080, h:607, caption:'Спортивная защита — перчатки'},
+      {src:'images/sber-b3-15-sport-bike.jpg', w:1080, h:607, caption:'Спортивные достижения — велосипед'},
+      {src:'images/sber-b3-16-sport-ball.jpg', w:1080, h:607, caption:'Спортивные достижения — футбол'},
+      {src:'images/sber-b3-17-skates.jpg', w:1400, h:786, caption:'Год без травм — коньки'},
+      {src:'images/sber-b3-18-swim.jpg', w:1080, h:607, caption:'Спортивные достижения — плавание'},
+      {src:'images/sber-b3-19-discount.jpg', w:1400, h:787, caption:'Скидка на страховые продукты'},
+      {src:'images/sber-b3-20-trophy.jpg', w:1080, h:607, caption:'Быстрее! Выше! Ярче!'}
+    ]
+  },
+  {
+    title:'Оформление презентаций, иллюстрации',
+    client:'IND',
+    cat:'IND',
+    year:'2024–2026',
+    unit:'слайдов',
+    scope:'Дизайн презентаций и иллюстрации к архитектурным концепциям: обложки, сценарии фасадов, брендинг проектов',
+    images:[
+      {src:'images/ind-pres-01-horse-illustration.jpg', w:1672, h:941, caption:'Иллюстрация — лошадь на холме у залива'},
+      {src:'images/ind-pres-02-riders-illustration.jpg', w:1672, h:941, caption:'Иллюстрация — древнерусские всадники в поле'},
+      {src:'images/ind-pres-03-arch-sketch-v1.jpg', w:1800, h:771, caption:'Архитектурный скетч — вариант 1'},
+      {src:'images/ind-pres-04-arch-sketch-v2.jpg', w:1800, h:771, caption:'Архитектурный скетч — вариант 2'},
+      {src:'images/ind-pres-05-staraya-ladoga.jpg', w:1448, h:1086, caption:'«Старая Ладога — Земля Легенд»'},
+      {src:'images/ind-pres-06-guta-rotfront.jpg', w:1528, h:1082, caption:'IND — Guta / Rot Front RC, архитектурная концепция'},
+      {src:'images/ind-pres-07-azimut-hotel-petroglyph.jpg', w:1781, h:1188, caption:'Azimut Hotel — обложка, петроглифы'},
+      {src:'images/ind-pres-08-azimut-forest-soul.jpg', w:1678, h:885, caption:'Azimut — «Лесная душа»'},
+      {src:'images/ind-pres-09-azimut-hotel-carving.jpg', w:1800, h:1009, caption:'Azimut Hotel — обложка, резьба по камню'},
+      {src:'images/ind-pres-10-taganskaya-cover.jpg', w:1800, h:1012, caption:'ЖК «Таганская» — титульный слайд'},
+      {src:'images/ind-pres-11-facade-variant2.jpg', w:1800, h:1012, caption:'Фасадное решение — вариант 2'},
+      {src:'images/ind-pres-12-facade-variant1.jpg', w:1800, h:1012, caption:'Фасадное решение — вариант 1'},
+      {src:'images/ind-pres-13-facade-variant3.jpg', w:1800, h:1012, caption:'Фасадное решение — вариант 3'},
+      {src:'images/ind-pres-14-facade-variant5.jpg', w:1800, h:1012, caption:'Фасадное решение — вариант 5'},
+      {src:'images/ind-pres-15-facade-variant4.jpg', w:1800, h:1012, caption:'Фасадное решение — вариант 4'}
+    ]
+  },
+  {
+    title:'Арт-объекты IND',
+    client:'IND',
+    cat:'IND',
+    year:'2024–2026',
+    unit:'работ',
+    scope:'Концепции скульптур и арт-объектов для общественных пространств',
+    images:[
+      {src:'images/ind-art-01-steel-petals-balls-v1.jpg', w:1024, h:1024, caption:'Скульптура из нержавеющей стали — лепестки и шары, вариант 1'},
+      {src:'images/ind-art-02-silver-hooded-bust.jpg', w:1024, h:1024, caption:'Серебристый бюст в капюшоне'},
+      {src:'images/ind-art-03-steel-petals-balls-v2.jpg', w:1024, h:1024, caption:'Скульптура из нержавеющей стали — лепестки и шары, вариант 2'},
+      {src:'images/ind-art-04-steel-petals-outdoor.jpg', w:1800, h:1800, caption:'Стальная скульптура во дворе — общий план'},
+      {src:'images/ind-art-05-wood-animal-v1.jpg', w:928, h:1232, caption:'Скульптура-животное из тёмного дерева, вариант 1'},
+      {src:'images/ind-art-06-wood-animal-v2.jpg', w:928, h:1232, caption:'Скульптура-животное из тёмного дерева, вариант 2'},
+      {src:'images/ind-art-07-voxel-tree-blue.jpg', w:483, h:589, caption:'Воксельная ёлка — сине-оранжевая'},
+      {src:'images/ind-art-08-voxel-tree-mono.jpg', w:483, h:589, caption:'Воксельная ёлка — чёрно-белая с красным'},
+      {src:'images/ind-art-09-red-horse-outdoor.jpg', w:1800, h:1200, caption:'Красная скульптура-лошадь у здания'},
+      {src:'images/ind-art-10-steel-x-outdoor.jpg', w:1800, h:1200, caption:'Хромированная скульптура-крест у здания'},
+      {src:'images/ind-art-11-spiky-sphere-outdoor.jpg', w:1800, h:1200, caption:'Хромированная шипастая скульптура у здания'},
+      {src:'images/ind-art-12-textured-horse-outdoor.jpg', w:1800, h:1200, caption:'Фактурная скульптура-лошадь у здания'}
+    ]
+  },
+  {
+    title:'Навигация IND',
+    client:'IND',
+    cat:'IND',
+    year:'2024–2026',
+    unit:'работ',
+    scope:'Навигация и указатели: паркинг, ландшафтные информационные стелы',
+    images:[
+      {src:'images/ind-nav-01-parking-signage.jpg', w:1448, h:1086, caption:'Навигация паркинга — указатель на колонне'},
+      {src:'images/ind-nav-02-stone-sign-front.jpg', w:1448, h:1086, caption:'Информационная стела на природном камне — фронтальный и боковой вид'},
+      {src:'images/ind-nav-03-stone-sign-scale.jpg', w:1086, h:1448, caption:'Информационная стела — масштаб относительно человека'},
+      {src:'images/ind-nav-04-nameplate-animals.jpg', w:1800, h:993, caption:'Концепт именной таблички с фигурами животных'},
+      {src:'images/ind-nav-05-stepnoy-put.jpg', w:941, h:1672, caption:'Стела «Степной путь»'},
+      {src:'images/ind-nav-06-rechnoy-put.jpg', w:941, h:1672, caption:'Стела «Речной путь»'},
+      {src:'images/ind-nav-07-yuzhny-put.jpg', w:941, h:1672, caption:'Стела «Южный путь»'},
+      {src:'images/ind-nav-08-za-travoy-photo.jpg', w:1122, h:1402, caption:'Табличка «За травой откроется вода» — фото на местности'},
+      {src:'images/ind-nav-09-severny-put.jpg', w:941, h:1672, caption:'Стела «Северный путь»'},
+      {src:'images/ind-nav-10-lesnoy-put.jpg', w:941, h:1672, caption:'Стела «Лесной путь»'}
+    ]
+  },
+  {
+    title:'Открытки IND',
+    client:'IND',
+    cat:'IND',
+    year:'2024–2026',
+    unit:'открыток',
+    scope:'Корпоративные открытки: дни рождения офисов и праздники',
+    images:[
+      {src:'images/ind-01-dubai-balloons.jpg', w:1350, h:1080, caption:'Dubai office — 1 год, шары'},
+      {src:'images/ind-02-birthday-construction.jpg', w:1400, h:787, caption:'IND Birthday — стройка на закате'},
+      {src:'images/ind-03-birthday-spb.jpg', w:1400, h:787, caption:'IND Saint Petersburg — 1 год'},
+      {src:'images/ind-04-birthday-crane-photo.jpg', w:1400, h:787, caption:'IND Birthday — 17 лет, кран'},
+      {src:'images/ind-05-birthday-crane-3d.jpg', w:1400, h:787, caption:'IND Birthday — 17 лет, 3D-версия'},
+      {src:'images/ind-06-dubai-map.jpg', w:1400, h:787, caption:'Dubai Office — 2 года, карта'},
+      {src:'images/ind-07-nowruz-flowers.jpg', w:1400, h:787, caption:'Happy Nowruz Holiday'},
+      {src:'images/ind-08-islamic-newyear.jpg', w:1400, h:787, caption:'Happy Islamic New Year'},
+      {src:'images/ind-09-ramadan-lantern.jpg', w:1400, h:787, caption:'Happy Ramadan — фонарь'},
+      {src:'images/ind-10-ramadan-moon.jpg', w:1400, h:787, caption:'Happy Ramadan — луна'},
+      {src:'images/ind-11-ramadan-lamp.jpg', w:1400, h:787, caption:'Happy Ramadan — минимал'},
+      {src:'images/ind-12-womens-day.jpg', w:1400, h:787, caption:'IND Women’s Day'},
+      {src:'images/ind-13-central-asia-birthday.jpg', w:1400, h:787, caption:'IND Central Asia — 3 года'},
+      {src:'images/ind-14-central-asia-3years.jpg', w:1400, h:787, caption:'IND Central Asia — 3 Years, узор'}
+    ]
+  },
+  {
+    title:'Иконки IND',
+    client:'IND',
+    cat:'IND',
+    year:'2024–2026',
+    unit:'иконок',
+    scope:'Неоморфные 3D-иконки приложения, сиреневая палитра',
+    images:[
+      {src:'images/stemps-09-rocket.jpg', w:1200, h:923, caption:'Ракета — запуск'},
+      {src:'images/stemps-01-notification.jpg', w:1200, h:923, caption:'Уведомление — чат'},
+      {src:'images/stemps-02-profile-stars.jpg', w:1200, h:923, caption:'Профиль со звёздами'},
+      {src:'images/stemps-03-calendar-star.jpg', w:1200, h:923, caption:'Календарь с избранным'},
+      {src:'images/stemps-04-thumbs-pencil.jpg', w:1200, h:923, caption:'Оценка и карандаш'},
+      {src:'images/stemps-05-shapes-person.jpg', w:1200, h:923, caption:'Фигуры и персонаж'},
+      {src:'images/stemps-06-list-x3.jpg', w:1200, h:923, caption:'Списки ×3'},
+      {src:'images/stemps-07-check-stars.jpg', w:1200, h:923, caption:'Чек-марка со звёздами'},
+      {src:'images/stemps-08-ribbon-star.jpg', w:1200, h:923, caption:'Награда-лента'},
+      {src:'images/stemps-10-process.jpg', w:1280, h:544, caption:'Процесс разработки: Figma + 3D-вьюпорт'},
+      {src:'images/ind-icon-11-3d-mark.jpg', w:1800, h:1005, caption:'Объёмная 3D-иконка — абстрактный знак'},
+      {src:'images/ind-icon-12-grass-plugin-set.jpg', w:1584, h:1122, caption:'Иконки для плагина GRASS'},
+      {src:'images/ind-icon-13-goat-silhouettes.jpg', w:1800, h:1201, caption:'Иконки — силуэты козла (пасётся, стоит, лежит)'},
+      {src:'images/ind-icon-14-horse-silhouettes.jpg', w:1800, h:901, caption:'Иконки — силуэты лошади (пасётся, стоит, лежит)'},
+      {src:'images/ind-icon-15-park-icons.jpg', w:1432, h:973, caption:'Иконки парка — олень, лошадь, скамья, тропа'}
+    ]
+  },
+  {
+    title:'Имярек',
+    client:'ИМЯРЕК',
+    cat:'Имярек',
+    year:'2026',
+    unit:'работ',
+    scope:'SMM, постеры, иллюстрации, иконки',
+    images:[
+      {src:'images/imyarek-01-main-poster.jpg', w:963, h:1372, caption:'Афиша показа — 29.08'},
+      {src:'images/imyarek-02-fashion-spektakl-post.jpg', w:1350, h:1800, caption:'Пост — Fashion-спектакль'},
+      {src:'images/imyarek-03-opcii-biletov-post.jpg', w:1350, h:1800, caption:'Пост — опции билетов'},
+      {src:'images/imyarek-04-afterparty-post.jpg', w:1350, h:1800, caption:'Пост — afterparty'},
+      {src:'images/imyarek-05-polny-bilet-post.jpg', w:1350, h:1800, caption:'Пост — полный билет'},
+      {src:'images/imyarek-06-tarif-insider-post.jpg', w:1350, h:1800, caption:'Пост — тариф «Инсайдер»'},
+      {src:'images/imyarek-07-tarif-patron-post.jpg', w:1350, h:1800, caption:'Пост — тариф «Патрон»'},
+      {src:'images/imyarek-08-tarif-parny-post.jpg', w:1350, h:1800, caption:'Пост — тариф «Парный»'},
+      {src:'images/imyarek-09-icon-rec.png', w:100, h:100, caption:'Иконка хайлайтс — inya.rec'},
+      {src:'images/imyarek-10-icon-tvoe-imya.png', w:100, h:100, caption:'Иконка хайлайтс — «твое имя?»'},
+      {src:'images/imyarek-11-icon-bald-head.png', w:100, h:100, caption:'Иконка хайлайтс — ИМЯРЕК'},
+      {src:'images/imyarek-12-nosering-illustration.jpg', w:924, h:1232, caption:'Иллюстрация — кольцо в носу'},
+      {src:'images/imyarek-13-teeth-grillz-illustration.jpg', w:1080, h:1440, caption:'Иллюстрация — грилз на зубах'},
+      {src:'images/imyarek-14-wrist-tattoo.jpg', w:1800, h:1800, caption:'Иллюстрация — тату на запястье'},
+      {src:'images/imyarek-15-vial-bottle.jpg', w:1800, h:1800, caption:'Иллюстрация — флакон-ампула'},
+      {src:'images/imyarek-16-rusty-key.jpg', w:1800, h:1800, caption:'Иллюстрация — ржавый ключ'},
+      {src:'images/imyarek-17-silver-platter.jpg', w:1800, h:1800, caption:'Иллюстрация — серебряный поднос'}
+    ]
+  },
+  {
+    title:'Постеры и афиши',
+    client:'Личные проекты, фриланс',
+    cat:'Постеры и афиши',
+    year:'2022–2026',
+    unit:'работ',
+    scope:'Афиши для клубных вечеринок и концертов, постер фильма, постер театральной лаборатории, социальный постер',
+    images:[
+      {src:'images/b54-01-acidboss.webp', w:1280, h:1280, caption:'Б54 — ACID BOSS, 5 марта'},
+      {src:'images/b54-02-megadiskoteka.webp', w:1280, h:1280, caption:'Б54 — Мега Дискотека 2000-х, 6 марта'},
+      {src:'images/b54-03-slavabogu-mar.webp', w:1080, h:1080, caption:'Б54 — Слава Богу, Пятница!, 25 марта'},
+      {src:'images/b54-04-sobless-memfis.webp', w:1280, h:1280, caption:'Б54 — SOBLESS x MEMFIS, 16 апреля'},
+      {src:'images/b54-05-slavabogu-apr.webp', w:1080, h:1080, caption:'Б54 — Праздничная Слава Богу, Пятница!, 22 апреля'},
+      {src:'images/b54-06-vyhodnye-may.webp', w:1080, h:1080, caption:'Б54 — Выходные в Доме культуры, 6–8 мая'},
+      {src:'images/b54-07-bardin-tekraw.webp', w:1080, h:1080, caption:'Б54 — MC BARDIN & TEKRAW, 21 мая'},
+      {src:'images/b54-08-slavabogu-summer.webp', w:1080, h:1080, caption:'Б54 — Слава Богу, Пятница! Summer Edition, 3 июня'},
+      {src:'images/b54-09-dr-sasha.webp', w:1080, h:1134, caption:'Б54 — День рождения основателя клуба, 4 июня'},
+      {src:'images/b54-10-djs-june.webp', w:1080, h:1080, caption:'Б54 — диджей-сет, 10–11 июня'},
+      {src:'images/b54-11-slavabogu-jul.webp', w:937, h:944, caption:'Б54 — Слава Богу, Пятница!, 8 июля'},
+      {src:'images/b54-12-nickwanna.webp', w:1080, h:1080, caption:'Б54 & NICK WANNA, 9 июля'},
+      {src:'images/b54-13-diskoteka-nulevyh.webp', w:1080, h:1080, caption:'Б54 — Дискотека нулевых и десятых, 17 июля'},
+      {src:'images/b54-14-yanix.webp', w:1280, h:1280, caption:'Б54 — YANIX, сольный концерт, 17 сентября'},
+      {src:'images/kiber-son-01-poster.webp', w:904, h:1280, caption:'«Кибер сон» — постер фильма'},
+      {src:'images/nado-pogovorit-01-logo.webp', w:1280, h:1280, caption:'«Надо поговорить» — логотип лаборатории'},
+      {src:'images/nado-pogovorit-02-gromkoe-molchanie.webp', w:904, h:1280, caption:'«Надо поговорить» — «Громкое молчание», перформанс'},
+      {src:'images/poster-01-voter.webp', w:1280, h:1280, caption:'«Почему ты молчишь, избиратель?»'}
+    ]
+  },
+  {
+    title:'Иллюстрации',
+    client:'Личные проекты',
+    cat:'Иллюстрации',
+    year:'2022–2026',
+    unit:'работ',
+    scope:'Графика и 3D-иллюстрации: скульптурные объекты, леттеринг, лайн-арт',
+    images:[
+      {src:'images/illust-01-fish-chrome.jpg', w:1080, h:1080, caption:'Хромированная рыба'},
+      {src:'images/illust-02-fly-poster.jpg', w:1200, h:1200, caption:'Постер с мухой и леттерингом'},
+      {src:'images/illust-03-cat-floral-lines.jpg', w:1200, h:1200, caption:'Кот в цветах, лайн-арт'},
+      {src:'images/illust-04-pink-lettering.jpg', w:1200, h:1200, caption:'Леттеринг на розовом фоне'},
+      {src:'images/illust-05-floral-lines-detail.jpg', w:1200, h:1199, caption:'Цветочный узор, деталь'},
+      {src:'images/illust-06-broken-heart.jpg', w:1080, h:1080, caption:'Разбитое сердце, 3D'},
+      {src:'images/illust-07-flower-icon-black.jpg', w:718, h:718, caption:'Цветок, иконка (чёрный)'},
+      {src:'images/illust-08-flower-icon-white.jpg', w:718, h:718, caption:'Цветок, иконка (инверсия)'},
+      {src:'images/illust-09-cat-floral-spots.jpg', w:1200, h:1200, caption:'Кот в цветах, вариант с пятнами'},
+      {src:'images/illust-10-urchin-chrome.jpg', w:1080, h:1080, caption:'Хромированный морской ёж'},
+      {src:'images/illust-11-chrome-ring.jpg', w:1200, h:1200, caption:'Хром, кольцо из шипов'},
+      {src:'images/illust-12-chrome-thorn.jpg', w:1200, h:1200, caption:'Хром, шип с карабином'},
+      {src:'images/illust-13-product-sketch.jpg', w:1200, h:674, caption:'Скетч устройства в разборе'},
+      {src:'images/illust-14-chrome-antler-dark.jpg', w:720, h:1280, caption:'Хром, ветви на чёрном'},
+      {src:'images/illust-15-shell-drawing.jpg', w:1200, h:1200, caption:'Рисунок карандашом: раковины'},
+      {src:'images/illust-16-game-potato.jpg', w:1200, h:675, caption:'Кадр из игрового проекта'},
+      {src:'images/illust-17-lineart-shell.jpg', w:1200, h:1200, caption:'Лайн-арт, ракушка крупным планом'},
+      {src:'images/illust-18-pixel-protocol.jpg', w:1200, h:674, caption:'Пиксель-арт с японской надписью'},
+      {src:'images/illust-19-blocky-character.jpg', w:1200, h:613, caption:'3D-персонаж на блочном ландшафте'},
+      {src:'images/illust-20-pixel-office.jpg', w:1200, h:847, caption:'Пиксель-арт, игровой интерфейс'},
+      {src:'images/illust-21-chrome-abstract.jpg', w:719, h:1280, caption:'Хром, абстрактная форма со звездой'}
+    ]
+  },
+  {
+    title:'Логотипы',
+    client:'Разные клиенты, фриланс',
+    cat:'Логотипы',
+    year:'2022–2026',
+    unit:'работ',
+    scope:'Разработка знаков и логотипов для брендов и личных проектов',
+    images:[
+      {src:'images/logo-01-kaz.webp', w:1080, h:1080, caption:'Леттеринг-знак, монограмма'},
+      {src:'images/logo-02-istnik.webp', w:640, h:640, caption:'Istnik — логотип, Russia.msk'},
+      {src:'images/logo-03-nado-pogovorit-variants.webp', w:1280, h:478, caption:'«Надо поговорить» — варианты знака'},
+      {src:'images/logo-04-t-mark.webp', w:1295, h:1295, caption:'Знак «Т»'},
+      {src:'images/logo-05-abstract-bars.webp', w:1295, h:1295, caption:'Абстрактный минималистичный знак'},
+      {src:'images/logo-06-iny-mark.webp', w:845, h:845, caption:'Леттеринг-монограмма'},
+      {src:'images/logo-07-in-mark.webp', w:1079, h:1078, caption:'Готический знак-монограмма'},
+      {src:'images/logo-08-face-forest.webp', w:1295, h:1295, caption:'Лайн-арт: профиль и лес'}
+    ]
+  },
+  {
+    title:'Мерч, упаковка',
+    client:'Разные клиенты, фриланс',
+    cat:'Мерч, упаковка',
+    year:'2022–2026',
+    unit:'работ',
+    scope:'Дизайн упаковки, мерч и брендированные предметы: этикетки, одежда, аксессуары',
+    images:[
+      {src:'images/ferdinand-01-wildberry.webp', w:1280, h:1280, caption:'Ferdinand — Wild Berry Soda, этикетка жидкости для вейпа'},
+      {src:'images/ferdinand-02-soursplash.webp', w:1280, h:1280, caption:'Ferdinand — Sour Splash, этикетка жидкости для вейпа'},
+      {src:'images/ferdinand-03-sparklingsummer.webp', w:1280, h:1280, caption:'Ferdinand — Sparkling Summer, этикетка жидкости для вейпа'},
+      {src:'images/ladoga-01-totebags.jpg', w:934, h:1684, caption:'«Ладожские бусы» — упаковочные мешки для украшений'},
+      {src:'images/merch-01-jersey.jpg', w:1122, h:1402, caption:'Велоджерси, кастомный принт'},
+      {src:'images/nado-pogovorit-03-businesscard.webp', w:1174, h:777, caption:'«Надо поговорить» — визитка с логотипом'},
+      {src:'images/b54-15-cap.webp', w:1280, h:825, caption:'Б54 — кепка с логотипом'},
+      {src:'images/b54-16-coaster.webp', w:1280, h:825, caption:'Б54 — костер (подставка под напитки)'},
+      {src:'images/b54-17-sweater.webp', w:1165, h:1165, caption:'Б54 — свитшот с маскотом'},
+      {src:'images/b54-18-lanyard-acidboss.webp', w:1280, h:959, caption:'Б54 x ACID BOSS — бейдж и лента'},
+      {src:'images/nazarovo-merch-mockups.jpg', w:1214, h:589, caption:'«Назарово» — брендированный мерч: брелок, футболка, бутылка, чехол, кружка, худи'}
+    ]
+  }
+];
+
+const CAT_COLORS = {
+  'СберСтрахование': 'hsl(142,45%,36%)',   // зелёный
+  'IND': 'hsl(220,8%,46%)',                 // серый
+};
+const DEFAULT_COLOR = 'hsl(355,62%,45%)';   // красный — личные проекты и Имярек
+function colorForCat(cat){
+  return CAT_COLORS[cat] || DEFAULT_COLOR;
+}
+
+const PROJECTS = REAL_PROJECTS.map((p, i) => {
+  const cardColor = colorForCat(p.cat);
+  const banners = p.images.map(img => ({
+    w:img.w, h:img.h, src:img.src, sizeName:img.caption, filename:img.caption
+  }));
+  return {
+    id:i, title:p.title, client:p.client, cat:p.cat, year:p.year,
+    cardColor, count:banners.length, unit:p.unit || 'баннеров',
+    description:p.description, link:p.link, scope:p.scope,
+    banners
+  };
+});
+
+function renderStats(){
+  document.getElementById('stat-projects').textContent = PROJECTS.length;
+  document.getElementById('stat-banners').textContent = PROJECTS.reduce((a,p)=>a+p.count,0);
+  document.getElementById('stat-formats').textContent = new Set(PROJECTS.map(p=>p.cat)).size;
+}
+
+function renderCatFilters(){
+  const cats = ['Все', ...new Set(PROJECTS.map(p=>p.cat))];
+  const box = document.getElementById('cat-filters');
+  box.innerHTML = '';
+  cats.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (c==='Все' ? ' active':'');
+    btn.textContent = c;
+    btn.onclick = ()=>{
+      document.querySelectorAll('#cat-filters .chip').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');
+      renderProjectGrid(c === 'Все' ? null : c);
+    };
+    box.appendChild(btn);
+  });
+}
+
+function renderProjectGrid(filterCat){
+  const grid = document.getElementById('grid-projects');
+  grid.innerHTML = '';
+  const list = filterCat ? PROJECTS.filter(p=>p.cat===filterCat) : PROJECTS;
+  list.forEach(p=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--card-hue', p.cardColor);
+    card.onclick = ()=>openGallery(p.id);
+
+    const collage = p.banners.slice(0,3).map(b=>{
+      const size = 56;
+      if(b.src){
+        return `<img class="swatch" src="${b.src}" style="width:${size}px;height:${size}px;object-fit:cover;" alt="" />`;
+      }
+      return `<div class="swatch" style="width:${size}px;height:${size}px;--sw-a:${b.colorA};--sw-b:${b.colorB};"></div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-no mono">№${String(p.id+1).padStart(2,'0')}</span>
+        <span class="card-cat">${p.cat}</span>
+      </div>
+      <h3 class="card-title">${p.title}</h3>
+      <p class="card-client">${p.client} · ${p.year}</p>
+      <div class="collage">${collage}</div>
+      <div class="card-foot">
+        <span>смотреть проект &rarr;</span>
+        <span><b>${p.count}</b> шт.</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+let currentProject = null;
+let currentSizeFilter = null;
+let currentBannerList = [];
+let lightboxIndex = 0;
+
+function openGallery(id){
+  currentProject = PROJECTS[id];
+  currentSizeFilter = null;
+  document.getElementById('home-header').style.display = 'none';
+  document.getElementById('index-view').style.display = 'none';
+  document.getElementById('gallery-view').style.display = 'block';
+  document.getElementById('g-title').textContent = currentProject.title;
+  const unit = currentProject.unit || 'баннеров';
+  document.getElementById('g-meta').innerHTML =
+    `${currentProject.client} &nbsp;·&nbsp; ${currentProject.cat} &nbsp;·&nbsp; ${currentProject.year} &nbsp;·&nbsp; <b>${currentProject.count}</b> ${unit}`;
+  const descBox = document.getElementById('g-description');
+  if(currentProject.description || currentProject.link){
+    let html = '';
+    if(currentProject.scope){
+      html += `<p>${currentProject.scope}</p>`;
+    }
+    if(currentProject.description){
+      html += `<p>${currentProject.description}</p>`;
+    }
+    if(currentProject.link){
+      html += `<a href="${currentProject.link.url}" target="_blank" rel="noopener">${currentProject.link.label} &rarr;</a>`;
+    }
+    descBox.innerHTML = html;
+    descBox.style.display = 'block';
+  } else {
+    descBox.style.display = 'none';
+  }
+  renderSizeFilters();
+  renderBannerGrid();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function toggleProfileRow(el){
+  el.parentElement.classList.toggle('open');
+}
+
+function showIndex(){
+  document.getElementById('gallery-view').style.display = 'none';
+  document.getElementById('home-header').style.display = 'block';
+  document.getElementById('index-view').style.display = 'block';
+}
+
+function renderSizeFilters(){
+  const box = document.getElementById('g-size-filters');
+  box.innerHTML = '';
+  if(currentProject.banners.some(b=>b.src)){
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'flex';
+  const sizesInProject = [...new Set(currentProject.banners.map(b=>`${b.w}x${b.h}`))];
+  box.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'chip active';
+  allBtn.textContent = 'Все форматы';
+  allBtn.onclick = ()=>{ currentSizeFilter=null; setActiveChip(box, allBtn); renderBannerGrid(); };
+  box.appendChild(allBtn);
+  sizesInProject.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.textContent = s;
+    btn.onclick = ()=>{ currentSizeFilter=s; setActiveChip(box, btn); renderBannerGrid(); };
+    box.appendChild(btn);
+  });
+}
+
+function setActiveChip(box, btn){
+  box.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderBannerGrid(){
+  const grid = document.getElementById('grid-banners');
+  grid.innerHTML = '';
+  currentBannerList = currentProject.banners.filter(b=>
+    !currentSizeFilter || `${b.w}x${b.h}` === currentSizeFilter
+  );
+  currentBannerList.forEach((b, idx)=>{
+    const ratio = b.w / b.h;
+    const cell = document.createElement('div');
+    cell.className = 'frame';
+    cell.onclick = ()=>openLightbox(idx);
+    const boxW = ratio >= 1 ? '88%' : `${88 * ratio}%`;
+    const boxH = ratio >= 1 ? `${80 / ratio}%` : '80%';
+    const label = b.src ? (b.sizeName || '') : `${b.w}×${b.h}`;
+    const bannerInner = b.src
+      ? `<img class="frame-banner" src="${b.src}" style="width:${boxW};height:${boxH};object-fit:contain;" alt="" />`
+      : `<div class="frame-banner" style="width:${boxW};height:${boxH};--bg-a:${b.colorA};--bg-b:${b.colorB};"></div>`;
+    cell.innerHTML = `
+      <div class="frame-tick"></div>
+      ${bannerInner}
+      <span class="frame-size">${label}</span>
+    `;
+    grid.appendChild(cell);
+  });
+}
+
+function openLightbox(idx){
+  lightboxIndex = idx;
+  showLightboxFrame();
+  document.getElementById('lightbox').style.display = 'flex';
+}
+
+function closeLightbox(){
+  document.getElementById('lightbox').style.display = 'none';
+}
+
+function navLightbox(dir){
+  lightboxIndex = (lightboxIndex + dir + currentBannerList.length) % currentBannerList.length;
+  showLightboxFrame();
+}
+
+function showLightboxFrame(){
+  const b = currentBannerList[lightboxIndex];
+  const el = document.getElementById('lb-banner');
+  const ratio = b.w / b.h;
+  const maxW = Math.min(window.innerWidth * 0.8, 900);
+  const maxH = window.innerHeight * 0.6;
+  let w = maxW, h = w / ratio;
+  if(h > maxH){ h = maxH; w = h * ratio; }
+  el.style.width = w + 'px';
+  el.style.height = h + 'px';
+  const reg = el.querySelectorAll('.reg');
+  if(b.src){
+    el.style.background = 'none';
+    let img = el.querySelector('.lb-img');
+    if(!img){
+      img = document.createElement('img');
+      img.className = 'lb-img';
+      el.insertBefore(img, el.firstChild);
+    }
+    img.src = b.src;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+  } else {
+    const img = el.querySelector('.lb-img');
+    if(img) img.remove();
+    el.style.setProperty('--bg-a', b.colorA);
+    el.style.setProperty('--bg-b', b.colorB);
+    el.style.background = '';
+  }
+  const label = b.src ? (b.sizeName || b.filename) : b.filename;
+  document.getElementById('lb-filename').textContent = label;
+  document.getElementById('lb-idx').textContent =
+    `${String(lightboxIndex+1).padStart(2,'0')} / ${String(currentBannerList.length).padStart(2,'0')} — ${b.w}×${b.h}`;
+}
+
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('lightbox').style.display === 'flex'){
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowRight') navLightbox(1);
+    if(e.key === 'ArrowLeft') navLightbox(-1);
+  }
+});
+
+renderStats();
+renderCatFilters();
+renderProjectGrid(null);
+</script>
+</body>
+</html>
